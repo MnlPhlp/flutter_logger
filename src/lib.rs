@@ -1,9 +1,9 @@
 use std::path::Path;
+pub mod logger;
 
 use flutter_rust_bridge::StreamSink;
-use logger::{AlreadyInitializedError, LogEntry};
-
-pub mod logger;
+use logger::AlreadyInitializedError;
+pub use logger::{LogEntry, LogLevel};
 
 #[macro_export]
 /// Log an error

@@ -5,6 +5,7 @@ use std::{sync::RwLock, time};
 
 use crate::logi;
 
+#[derive(Clone)]
 pub enum LogLevel {
     Error,
     Warning,
@@ -25,6 +26,7 @@ impl support::IntoDart for LogLevel {
 }
 impl support::IntoDartExceptPrimitive for LogLevel {}
 
+#[derive(Clone)]
 pub struct LogEntry {
     pub time_millis: i64,
     pub msg: String,

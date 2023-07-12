@@ -2,6 +2,13 @@
 name = "flutter_logger"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "logging library for using rust together with flutter/dart and flutter_rust_bridge"
+homepage = "https://github.com/MnlPhlp/flutter_logger"
+repository = "https://github.com/MnlPhlp/flutter_logger"
+keywords = ["logging", "ffi", "flutter", "dart", "mobile"]
+categories = ["development-tools::debugging","development-tools::ffi","gui"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
