@@ -34,16 +34,6 @@ fn wire_test_impl(port_: MessagePort, i: impl Wire2Api<i32> + UnwindSafe) {
         },
     )
 }
-fn wire_get_log_entry_impl(port_: MessagePort) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
-        WrapInfo {
-            debug_name: "get_log_entry",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Ok(mirror_LogEntry(get_log_entry())),
-    )
-}
 fn wire_init_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -74,9 +64,10 @@ const _: fn() = || {
     }
     match None::<LogLevel>.unwrap() {
         LogLevel::Error => {}
-        LogLevel::Warning => {}
+        LogLevel::Warn => {}
         LogLevel::Info => {}
         LogLevel::Debug => {}
+        LogLevel::Trace => {}
     }
 };
 // Section: allocate functions
@@ -121,9 +112,10 @@ impl support::IntoDart for mirror_LogLevel {
     fn into_dart(self) -> support::DartAbi {
         match self.0 {
             LogLevel::Error => 0,
-            LogLevel::Warning => 1,
+            LogLevel::Warn => 1,
             LogLevel::Info => 2,
             LogLevel::Debug => 3,
+            LogLevel::Trace => 4,
         }
         .into_dart()
     }

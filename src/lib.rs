@@ -1,8 +1,9 @@
+use log::LevelFilter;
 use std::path::Path;
+use thiserror::Error;
 pub mod logger;
 
 use flutter_rust_bridge::StreamSink;
-use logger::AlreadyInitializedError;
 pub use logger::{LogEntry, LogLevel};
 
 #[macro_export]
@@ -59,7 +60,38 @@ pub fn get_lbl(path: &str) -> &str {
     &filename[..filename.len() - 3]
 }
 
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("logger was already initialized")]
+    AlreadyInitialized,
+
+    #[error("error setting logger {0}")]
+    SetLoggerError(log::SetLoggerError),
+}
+
+static LOGGER: FlutterLogger = FlutterLogger;
 /// initialize the Logger with a stream that sends LogEntries to dart/flutter
-pub fn init(sink: StreamSink<LogEntry>) -> Result<(), AlreadyInitializedError> {
-    logger::init(sink)
+pub fn init(sink: StreamSink<LogEntry>, filter: LevelFilter) -> Result<(), Error> {
+    logger::init(sink)?;
+    log::set_logger(&LOGGER).map_err(|e| Error::SetLoggerError(e))?;
+    log::set_max_level(filter);
+    Ok(())
+}
+
+pub struct FlutterLogger;
+impl log::Log for FlutterLogger {
+    fn enabled(&self, metadata: &log::Metadata) -> bool {
+        metadata.level() < log::Level::Debug
+    }
+
+    fn log(&self, record: &log::Record) {
+        logi!("log traits log fn called");
+        logger::log(
+            LogLevel::from(record.level()),
+            record.file().unwrap_or("unknown"),
+            &std::fmt::format(record.args().to_owned()),
+        )
+    }
+
+    fn flush(&self) {}
 }

@@ -15,10 +15,6 @@ abstract class RustLib {
 
   FlutterRustBridgeTaskConstMeta get kTestConstMeta;
 
-  Future<LogEntry> getLogEntry({dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kGetLogEntryConstMeta;
-
   Stream<LogEntry> init({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kInitConstMeta;
@@ -40,9 +36,10 @@ class LogEntry {
 
 enum LogLevel {
   Error,
-  Warning,
+  Warn,
   Info,
   Debug,
+  Trace,
 }
 
 class RustLibImpl implements RustLib {
@@ -69,22 +66,6 @@ class RustLibImpl implements RustLib {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "test",
         argNames: ["i"],
-      );
-
-  Future<LogEntry> getLogEntry({dynamic hint}) {
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_get_log_entry(port_),
-      parseSuccessData: _wire2api_log_entry,
-      constMeta: kGetLogEntryConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kGetLogEntryConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "get_log_entry",
-        argNames: [],
       );
 
   Stream<LogEntry> init({dynamic hint}) {
@@ -277,20 +258,6 @@ class RustLibWire implements FlutterRustBridgeWireBase {
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.Int32)>>(
           'wire_test');
   late final _wire_test = _wire_testPtr.asFunction<void Function(int, int)>();
-
-  void wire_get_log_entry(
-    int port_,
-  ) {
-    return _wire_get_log_entry(
-      port_,
-    );
-  }
-
-  late final _wire_get_log_entryPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_get_log_entry');
-  late final _wire_get_log_entry =
-      _wire_get_log_entryPtr.asFunction<void Function(int)>();
 
   void wire_init(
     int port_,

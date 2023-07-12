@@ -7,11 +7,6 @@ pub extern "C" fn wire_test(port_: i64, i: i32) {
 }
 
 #[no_mangle]
-pub extern "C" fn wire_get_log_entry(port_: i64) {
-    wire_get_log_entry_impl(port_)
-}
-
-#[no_mangle]
 pub extern "C" fn wire_init(port_: i64) {
     wire_init_impl(port_)
 }

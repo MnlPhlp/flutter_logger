@@ -1,17 +1,14 @@
-use flutter_logger::logi;
-pub use flutter_logger::{LogEntry, LogLevel};
+use flutter_logger::FlutterLogger;
+pub use flutter_logger::{logi, LogEntry, LogLevel};
 use flutter_rust_bridge::{frb, StreamSink};
+use log::{info, LevelFilter};
 
 pub fn test(i: i32) {
-    logi!("test called with: {i}");
+    logi!("test called logi!() with: {i}");
+    info!("test called Log traits info!() with: {i}");
 }
-
-pub fn get_log_entry() -> LogEntry {
-    todo!()
-}
-
 pub fn init(sink: StreamSink<LogEntry>) {
-    flutter_logger::init(sink).unwrap();
+    flutter_logger::init(sink, LevelFilter::Off).unwrap();
 }
 
 // We need this mirrors to make flutter_rust_bridge_codegen generate the types correctly
@@ -26,7 +23,8 @@ struct _LogEntry {
 #[frb(mirror(LogLevel))]
 enum _LogLevel {
     Error,
-    Warning,
+    Warn,
     Info,
     Debug,
+    Trace,
 }
