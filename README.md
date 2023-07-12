@@ -14,11 +14,14 @@ This code is not complete. Look into the example folder for a full working examp
 
 ```rs
 pub fn test(i: i32) {
-    logi!("test called with: {i}");
+		// using own macros
+		logi!("test called with: {i}");
+		// using the 'log' crate macros
+		info!("test called with: {i}")
 }
 
 pub fn init(sink: StreamSink<LogEntry>) {
-    flutter_logger::init(sink).unwrap();
+		flutter_logger::init(sink).unwrap();
 }
 ```
 
