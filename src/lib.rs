@@ -1,10 +1,15 @@
 use log::LevelFilter;
-use std::path::Path;
+use logger::LogSink;
+use std::{
+    path::Path,
+    sync::atomic::{AtomicBool, Ordering},
+};
 use thiserror::Error;
 pub mod logger;
-
 use flutter_rust_bridge::StreamSink;
 pub use logger::{LogEntry, LogLevel};
+#[cfg(test)]
+mod tests;
 
 #[macro_export]
 /// Log an error
@@ -53,7 +58,7 @@ macro_rules! logd {
 
 /// create a logger label from a src file path
 /// ```
-/// let lbl = get_lbl(file!())
+/// let lbl = flutter_logger::get_lbl(file!());
 /// ```
 pub fn get_lbl(path: &str) -> &str {
     let filename = Path::new(path).file_name().unwrap().to_str().unwrap();
@@ -70,11 +75,14 @@ pub enum Error {
 }
 
 static LOGGER: FlutterLogger = FlutterLogger;
+static IS_INITIALIZED: AtomicBool = AtomicBool::new(false);
 /// initialize the Logger with a stream that sends LogEntries to dart/flutter
-pub fn init(sink: StreamSink<LogEntry>, filter: LevelFilter) -> Result<(), Error> {
-    logger::init(sink)?;
-    log::set_logger(&LOGGER).map_err(|e| Error::SetLoggerError(e))?;
+pub fn init(sink: impl LogSink + 'static, filter: LevelFilter) -> Result<(), Error> {
+    if !IS_INITIALIZED.swap(true, Ordering::Relaxed) {
+        log::set_logger(&LOGGER).map_err(|e| Error::SetLoggerError(e))?;
+    }
     log::set_max_level(filter);
+    logger::init(sink)?;
     Ok(())
 }
 
@@ -85,10 +93,9 @@ impl log::Log for FlutterLogger {
     }
 
     fn log(&self, record: &log::Record) {
-        logi!("log traits log fn called");
         logger::log(
             LogLevel::from(record.level()),
-            record.file().unwrap_or("unknown"),
+            record.file().map(|f| get_lbl(f)).unwrap_or("unknown"),
             &std::fmt::format(record.args().to_owned()),
         )
     }

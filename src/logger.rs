@@ -3,10 +3,9 @@ use flutter_rust_bridge::StreamSink;
 use once_cell::sync::OnceCell;
 use std::{sync::RwLock, time};
 
-use crate::logi;
 use crate::Error;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum LogLevel {
     Error,
     Warn,
@@ -41,7 +40,7 @@ impl support::IntoDart for LogLevel {
 }
 impl support::IntoDartExceptPrimitive for LogLevel {}
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct LogEntry {
     pub time_millis: i64,
     pub msg: String,
@@ -62,10 +61,9 @@ impl support::IntoDart for LogEntry {
 impl support::IntoDartExceptPrimitive for LogEntry {}
 
 pub fn log(level: LogLevel, label: &str, msg: &str) {
-    if let Some(logger) = LOGGER.get() {
-        let logger = logger.read().unwrap();
+    if let Some(logger) = LOGGER.read().unwrap().as_ref() {
         let start = START.get().unwrap();
-        logger.add(LogEntry {
+        logger.send(LogEntry {
             time_millis: start.elapsed().as_millis() as i64,
             msg: String::from(msg),
             log_level: level,
@@ -74,18 +72,25 @@ pub fn log(level: LogLevel, label: &str, msg: &str) {
     }
 }
 
-static LOGGER: OnceCell<RwLock<StreamSink<LogEntry>>> = OnceCell::new();
+static LOGGER: RwLock<Option<Box<dyn LogSink + Send + Sync>>> = RwLock::new(None);
 static START: OnceCell<time::Instant> = OnceCell::new();
-/// initialize a stream to pass log events to dart/flutter
-pub fn init(s: StreamSink<LogEntry>) -> Result<(), Error> {
-    if LOGGER.get().is_none() && START.get().is_none() {
-        let _ = START.set(time::Instant::now());
-        let _ = LOGGER.set(RwLock::new(s));
-        logi!("Logger ready!");
-        #[cfg(feature = "panic")]
-        std::panic::set_hook(Box::new(|p| crate::loge!("panic occured: {p:?}")));
-        Ok(())
-    } else {
-        Err(Error::AlreadyInitialized)
+
+#[cfg_attr(test, mockall::automock)]
+pub trait LogSink: Send + Sync {
+    fn send(&self, entry: LogEntry);
+}
+
+impl LogSink for StreamSink<LogEntry> {
+    fn send(&self, entry: LogEntry) {
+        self.add(entry);
     }
+}
+
+/// initialize a stream to pass log events to dart/flutter
+pub fn init(s: impl LogSink + 'static) -> Result<(), Error> {
+    let _ = START.set(time::Instant::now());
+    *LOGGER.write().unwrap() = Some(Box::new(s));
+    #[cfg(feature = "panic")]
+    std::panic::set_hook(Box::new(|p| crate::loge!("panic occured: {p:?}")));
+    Ok(())
 }

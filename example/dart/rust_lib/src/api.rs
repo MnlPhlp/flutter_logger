@@ -8,7 +8,7 @@ pub fn test(i: i32) {
     info!("test called Log traits info!() with: {i}");
 }
 pub fn init(sink: StreamSink<LogEntry>) {
-    flutter_logger::init(sink, LevelFilter::Off).unwrap();
+    flutter_logger::init(sink, LevelFilter::Trace).unwrap();
 }
 
 // We need this mirrors to make flutter_rust_bridge_codegen generate the types correctly
