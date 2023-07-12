@@ -6,7 +6,6 @@ use std::{
 };
 use thiserror::Error;
 pub mod logger;
-use flutter_rust_bridge::StreamSink;
 pub use logger::{LogEntry, LogLevel};
 #[cfg(test)]
 mod tests;

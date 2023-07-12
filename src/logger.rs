@@ -61,7 +61,11 @@ impl support::IntoDart for LogEntry {
 impl support::IntoDartExceptPrimitive for LogEntry {}
 
 pub fn log(level: LogLevel, label: &str, msg: &str) {
-    if let Some(logger) = LOGGER.read().unwrap().as_ref() {
+    let logger = match LOGGER.read() {
+        Ok(val) => val,
+        Err(val) => val.into_inner(),
+    };
+    if let Some(logger) = logger.as_ref() {
         let start = START.get().unwrap();
         logger.send(LogEntry {
             time_millis: start.elapsed().as_millis() as i64,
@@ -89,7 +93,11 @@ impl LogSink for StreamSink<LogEntry> {
 /// initialize a stream to pass log events to dart/flutter
 pub fn init(s: impl LogSink + 'static) -> Result<(), Error> {
     let _ = START.set(time::Instant::now());
-    *LOGGER.write().unwrap() = Some(Box::new(s));
+    let mut logger = match LOGGER.write() {
+        Ok(val) => val,
+        Err(val) => val.into_inner(),
+    };
+    *logger = Some(Box::new(s));
     #[cfg(feature = "panic")]
     std::panic::set_hook(Box::new(|p| crate::loge!("panic occured: {p:?}")));
     Ok(())

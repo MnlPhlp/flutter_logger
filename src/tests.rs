@@ -24,7 +24,6 @@ fn test_log_crate_macros() {
     info!("info log");
 }
 
-// #[cfg(features = "panic")]
 #[test]
 #[should_panic]
 fn test_panic() {
