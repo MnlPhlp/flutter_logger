@@ -1,17 +1,6 @@
 use log::info;
 
-use crate::{logger::MockLogSink, logi};
-
-#[test]
-fn test_own_macros() {
-    let mut sink = MockLogSink::new();
-    sink.expect_send()
-        .once()
-        .return_const(())
-        .withf(|entry| entry.msg == "info log" && entry.lbl == "tests");
-    assert!(crate::init(sink, log::LevelFilter::Off).is_ok());
-    logi!("info log");
-}
+use crate::logger::MockLogSink;
 
 #[test]
 fn test_log_crate_macros() {

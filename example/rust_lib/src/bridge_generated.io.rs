@@ -11,6 +11,11 @@ pub extern "C" fn wire_init(port_: i64) {
     wire_init_impl(port_)
 }
 
+#[no_mangle]
+pub extern "C" fn wire_panic(port_: i64) {
+    wire_panic_impl(port_)
+}
+
 // Section: allocate functions
 
 // Section: related functions

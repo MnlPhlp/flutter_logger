@@ -6,54 +6,9 @@ use std::{
 };
 use thiserror::Error;
 pub mod logger;
-pub use logger::{LogEntry, LogLevel};
+pub use logger::LogEntry;
 #[cfg(test)]
 mod tests;
-
-#[macro_export]
-/// Log an error
-/// This accepts the same input as println!() or format!()
-macro_rules! loge {
-    ($($args:tt)*) => {
-        {
-            let lbl = $crate::get_lbl(file!());
-            $crate::logger::log($crate::logger::LogLevel::Error,lbl,&format!($($args)*));
-        }
-    };
-}
-#[macro_export]
-/// Log a warning
-/// This accepts the same input as println!() or format!()
-macro_rules! logw {
-    ($($args:tt)*) => {
-        {
-            let lbl = $crate::get_lbl(file!());
-            $crate::logger::log($crate::logger::LogLevel::Warning,lbl,&format!($($args)*));
-        }
-    };
-}
-#[macro_export]
-/// Log an info
-/// This accepts the same input as println!() or format!()
-macro_rules! logi {
-    ($($args:tt)*) => {
-        {
-            let lbl = $crate::get_lbl(file!());
-            $crate::logger::log($crate::logger::LogLevel::Info,lbl,&format!($($args)*));
-        }
-    };
-}
-#[macro_export]
-/// Log debug information
-/// This accepts the same input as println!() or format!()
-macro_rules! logd {
-    ($($args:tt)*) => {
-        {
-            let lbl = $crate::get_lbl(file!());
-            $crate::logger::log($crate::logger::LogLevel::Debug,lbl,&format!($($args)*));
-        }
-    };
-}
 
 /// create a logger label from a src file path
 /// ```
@@ -92,8 +47,11 @@ impl log::Log for FlutterLogger {
     }
 
     fn log(&self, record: &log::Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
         logger::log(
-            LogLevel::from(record.level()),
+            record.level(),
             record.file().map(|f| get_lbl(f)).unwrap_or("unknown"),
             &std::fmt::format(record.args().to_owned()),
         )

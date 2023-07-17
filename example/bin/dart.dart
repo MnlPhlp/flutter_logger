@@ -16,5 +16,8 @@ Future<void> setupLogger() async {
 void main(List<String> arguments) async {
   await setupLogger();
   await rustLib.test(i: 12);
+  try {
+    await rustLib.panic();
+  } catch (e) {}
   exit(0);
 }

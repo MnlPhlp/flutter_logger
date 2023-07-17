@@ -124,7 +124,7 @@ dependencies = [
 
 [[package]]
 name = "flutter_logger"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "flutter_rust_bridge",
  "log",
@@ -135,8 +135,6 @@ dependencies = [
 [[package]]
 name = "flutter_rust_bridge"
 version = "1.78.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "614e0d9e63b6a83b4aaccf24363858ec977643334ce9d397b4b51254f4bd1a39"
 dependencies = [
  "allo-isolate",
  "anyhow",
@@ -160,8 +158,6 @@ dependencies = [
 [[package]]
 name = "flutter_rust_bridge_macros"
 version = "1.78.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79f50b7e25ca3a833a5feabd0fdadb52ea10fc37f053deca87847059634a45ea"
 
 [[package]]
 name = "hermit-abi"

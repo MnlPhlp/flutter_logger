@@ -1,66 +1,49 @@
-use flutter_rust_bridge::support;
-use flutter_rust_bridge::StreamSink;
+use flutter_rust_bridge::{
+    rust2dart::IntoIntoDart, support::ffi::DartCObject, IntoDart, StreamSink,
+};
 use once_cell::sync::OnceCell;
 use std::{sync::RwLock, time};
 
 use crate::Error;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum LogLevel {
-    Error,
-    Warn,
-    Info,
-    Debug,
-    Trace,
-}
-
-impl From<log::Level> for LogLevel {
-    fn from(value: log::Level) -> Self {
-        match value {
-            log::Level::Error => Self::Error,
-            log::Level::Warn => Self::Warn,
-            log::Level::Info => Self::Info,
-            log::Level::Debug => Self::Debug,
-            log::Level::Trace => Self::Trace,
-        }
-    }
-}
-
-impl support::IntoDart for LogLevel {
-    fn into_dart(self) -> support::DartAbi {
-        match self {
-            Self::Error => 0,
-            Self::Warn => 1,
-            Self::Info => 2,
-            Self::Debug => 3,
-            Self::Trace => 4,
-        }
-        .into_dart()
-    }
-}
-impl support::IntoDartExceptPrimitive for LogLevel {}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct LogEntry {
     pub time_millis: i64,
     pub msg: String,
-    pub log_level: LogLevel,
+    pub log_level: log::Level,
     pub lbl: String,
 }
-impl support::IntoDart for LogEntry {
-    fn into_dart(self) -> support::DartAbi {
+
+// implemented manually because we have no code generated from flutter_rust_bridge in this crate
+
+fn level_into_dart(level: log::Level) -> DartCObject {
+    match level {
+        log::Level::Error => 0,
+        log::Level::Warn => 1,
+        log::Level::Info => 2,
+        log::Level::Debug => 3,
+        log::Level::Trace => 4,
+    }
+    .into_dart()
+}
+impl IntoDart for LogEntry {
+    fn into_dart(self) -> DartCObject {
         vec![
             self.time_millis.into_dart(),
             self.msg.into_dart(),
-            self.log_level.into_dart(),
+            level_into_dart(self.log_level),
             self.lbl.into_dart(),
         ]
         .into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for LogEntry {}
+impl IntoIntoDart<LogEntry> for LogEntry {
+    fn into_into_dart(self) -> LogEntry {
+        self
+    }
+}
 
-pub fn log(level: LogLevel, label: &str, msg: &str) {
+pub fn log(level: log::Level, label: &str, msg: &str) {
     let logger = match LOGGER.read() {
         Ok(val) => val,
         Err(val) => val.into_inner(),
@@ -76,7 +59,7 @@ pub fn log(level: LogLevel, label: &str, msg: &str) {
     }
 }
 
-static LOGGER: RwLock<Option<Box<dyn LogSink + Send + Sync>>> = RwLock::new(None);
+static LOGGER: RwLock<Option<Box<dyn LogSink>>> = RwLock::new(None);
 static START: OnceCell<time::Instant> = OnceCell::new();
 
 #[cfg_attr(test, mockall::automock)]
@@ -99,6 +82,6 @@ pub fn init(s: impl LogSink + 'static) -> Result<(), Error> {
     };
     *logger = Some(Box::new(s));
     #[cfg(feature = "panic")]
-    std::panic::set_hook(Box::new(|p| crate::loge!("panic occured: {p:?}")));
+    std::panic::set_hook(Box::new(|p| log::error!("panic occured: {p:?}")));
     Ok(())
 }

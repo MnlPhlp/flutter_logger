@@ -13,6 +13,7 @@
 
 use crate::api::*;
 use core::panic::UnwindSafe;
+use flutter_rust_bridge::rust2dart::IntoIntoDart;
 use flutter_rust_bridge::*;
 use std::ffi::c_void;
 use std::sync::Arc;
@@ -22,7 +23,7 @@ use std::sync::Arc;
 // Section: wire functions
 
 fn wire_test_impl(port_: MessagePort, i: impl Wire2Api<i32> + UnwindSafe) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, ()>(
         WrapInfo {
             debug_name: "test",
             port: Some(port_),
@@ -35,39 +36,49 @@ fn wire_test_impl(port_: MessagePort, i: impl Wire2Api<i32> + UnwindSafe) {
     )
 }
 fn wire_init_impl(port_: MessagePort) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, ()>(
         WrapInfo {
             debug_name: "init",
             port: Some(port_),
             mode: FfiCallMode::Stream,
         },
-        move || move |task_callback| Ok(init(task_callback.stream_sink())),
+        move || move |task_callback| Ok(init(task_callback.stream_sink::<_, mirror_LogEntry>())),
+    )
+}
+fn wire_panic_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, ()>(
+        WrapInfo {
+            debug_name: "panic",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(panic()),
     )
 }
 // Section: wrapper structs
 
 #[derive(Clone)]
-struct mirror_LogEntry(LogEntry);
+pub struct mirror_Level(Level);
 
 #[derive(Clone)]
-struct mirror_LogLevel(LogLevel);
+pub struct mirror_LogEntry(LogEntry);
 
 // Section: static checks
 
 const _: fn() = || {
+    match None::<Level>.unwrap() {
+        Level::Error => {}
+        Level::Warn => {}
+        Level::Info => {}
+        Level::Debug => {}
+        Level::Trace => {}
+    }
     {
         let LogEntry = None::<LogEntry>.unwrap();
         let _: i64 = LogEntry.time_millis;
         let _: String = LogEntry.msg;
-        let _: LogLevel = LogEntry.log_level;
+        let _: Level = LogEntry.log_level;
         let _: String = LogEntry.lbl;
-    }
-    match None::<LogLevel>.unwrap() {
-        LogLevel::Error => {}
-        LogLevel::Warn => {}
-        LogLevel::Info => {}
-        LogLevel::Debug => {}
-        LogLevel::Trace => {}
     }
 };
 // Section: allocate functions
@@ -95,32 +106,42 @@ impl Wire2Api<i32> for i32 {
 }
 // Section: impl IntoDart
 
+impl support::IntoDart for mirror_Level {
+    fn into_dart(self) -> support::DartAbi {
+        match self.0 {
+            Level::Error => 0,
+            Level::Warn => 1,
+            Level::Info => 2,
+            Level::Debug => 3,
+            Level::Trace => 4,
+        }
+        .into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for mirror_Level {}
+impl rust2dart::IntoIntoDart<mirror_Level> for Level {
+    fn into_into_dart(self) -> mirror_Level {
+        mirror_Level(self)
+    }
+}
+
 impl support::IntoDart for mirror_LogEntry {
     fn into_dart(self) -> support::DartAbi {
         vec![
-            self.0.time_millis.into_dart(),
-            self.0.msg.into_dart(),
-            mirror_LogLevel(self.0.log_level).into_dart(),
-            self.0.lbl.into_dart(),
+            self.0.time_millis.into_into_dart().into_dart(),
+            self.0.msg.into_into_dart().into_dart(),
+            self.0.log_level.into_into_dart().into_dart(),
+            self.0.lbl.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
 }
 impl support::IntoDartExceptPrimitive for mirror_LogEntry {}
-
-impl support::IntoDart for mirror_LogLevel {
-    fn into_dart(self) -> support::DartAbi {
-        match self.0 {
-            LogLevel::Error => 0,
-            LogLevel::Warn => 1,
-            LogLevel::Info => 2,
-            LogLevel::Debug => 3,
-            LogLevel::Trace => 4,
-        }
-        .into_dart()
+impl rust2dart::IntoIntoDart<mirror_LogEntry> for LogEntry {
+    fn into_into_dart(self) -> mirror_LogEntry {
+        mirror_LogEntry(self)
     }
 }
-impl support::IntoDartExceptPrimitive for mirror_LogLevel {}
 
 // Section: executor
 

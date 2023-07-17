@@ -18,12 +18,24 @@ abstract class RustLib {
   Stream<LogEntry> init({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kInitConstMeta;
+
+  Future<void> panic({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kPanicConstMeta;
+}
+
+enum Level {
+  Error,
+  Warn,
+  Info,
+  Debug,
+  Trace,
 }
 
 class LogEntry {
   final int timeMillis;
   final String msg;
-  final LogLevel logLevel;
+  final Level logLevel;
   final String lbl;
 
   const LogEntry({
@@ -32,14 +44,6 @@ class LogEntry {
     required this.logLevel,
     required this.lbl,
   });
-}
-
-enum LogLevel {
-  Error,
-  Warn,
-  Info,
-  Debug,
-  Trace,
 }
 
 class RustLibImpl implements RustLib {
@@ -84,6 +88,22 @@ class RustLibImpl implements RustLib {
         argNames: [],
       );
 
+  Future<void> panic({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_panic(port_),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kPanicConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kPanicConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "panic",
+        argNames: [],
+      );
+
   void dispose() {
     _platform.dispose();
   }
@@ -101,6 +121,10 @@ class RustLibImpl implements RustLib {
     return castInt(raw);
   }
 
+  Level _wire2api_level(dynamic raw) {
+    return Level.values[raw as int];
+  }
+
   LogEntry _wire2api_log_entry(dynamic raw) {
     final arr = raw as List<dynamic>;
     if (arr.length != 4)
@@ -108,13 +132,9 @@ class RustLibImpl implements RustLib {
     return LogEntry(
       timeMillis: _wire2api_i64(arr[0]),
       msg: _wire2api_String(arr[1]),
-      logLevel: _wire2api_log_level(arr[2]),
+      logLevel: _wire2api_level(arr[2]),
       lbl: _wire2api_String(arr[3]),
     );
-  }
-
-  LogLevel _wire2api_log_level(dynamic raw) {
-    return LogLevel.values[raw as int];
   }
 
   int _wire2api_u8(dynamic raw) {
@@ -270,6 +290,18 @@ class RustLibWire implements FlutterRustBridgeWireBase {
   late final _wire_initPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_init');
   late final _wire_init = _wire_initPtr.asFunction<void Function(int)>();
+
+  void wire_panic(
+    int port_,
+  ) {
+    return _wire_panic(
+      port_,
+    );
+  }
+
+  late final _wire_panicPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_panic');
+  late final _wire_panic = _wire_panicPtr.asFunction<void Function(int)>();
 
   void free_WireSyncReturn(
     WireSyncReturn ptr,
