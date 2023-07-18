@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Setup Dart SDK
+      uses: dart-lang/setup-dart@v1.5.0
     - name: Build
       run: cargo build --verbose
     - name: Build with panic
