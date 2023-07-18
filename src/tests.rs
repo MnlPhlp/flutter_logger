@@ -1,26 +1,44 @@
+use std::{
+    cell::RefCell,
+    panic::catch_unwind,
+    process::Command,
+    sync::{Arc, Mutex},
+};
+
 use log::info;
 
-use crate::logger::MockLogSink;
+use crate::{logger::LogSink, LogEntry};
 
-#[test]
-fn test_log_crate_macros() {
-    let mut sink = MockLogSink::new();
-    sink.expect_send()
-        .once()
-        .return_const(())
-        .withf(|entry| entry.msg == "info log" && entry.lbl == "tests");
-    crate::init(sink, log::LevelFilter::Trace).unwrap();
-    info!("info log");
+#[derive(Default, Clone)]
+struct TestLogSink {
+    calls: Arc<Mutex<i32>>,
+    last_arg: Arc<Mutex<Option<LogEntry>>>,
+}
+
+impl LogSink for TestLogSink {
+    fn send(&self, entry: LogEntry) {
+        *self.last_arg.lock().unwrap() = Some(entry);
+        *self.calls.lock().unwrap() += 1
+    }
 }
 
 #[test]
-#[should_panic]
-fn test_panic() {
-    let mut sink = MockLogSink::new();
-    sink.expect_send()
-        .once()
-        .return_const(())
-        .withf(|entry| entry.msg.starts_with("panic occured:") && entry.lbl == "logger");
-    crate::init(sink, log::LevelFilter::Trace).unwrap();
-    panic!("test")
+fn test_log_crate_macros() {
+    let sink = TestLogSink::default();
+    crate::init(sink.clone(), log::LevelFilter::Trace).unwrap();
+
+    info!("info log");
+
+    assert!(*sink.calls.lock().unwrap() == 1);
+    let msg = sink.last_arg.lock().unwrap().as_ref().unwrap().clone();
+    assert!(msg.msg == "info log");
+    assert!(msg.lbl == "tests");
+}
+
+#[test]
+fn test_example() {
+    let output = Command::new("./run.sh").current_dir("./example").output();
+    println!("{output:?}");
+    assert!(output.is_ok());
+    assert!(output.unwrap().status.success());
 }

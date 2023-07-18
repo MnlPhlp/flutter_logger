@@ -62,7 +62,6 @@ pub fn log(level: log::Level, label: &str, msg: &str) {
 static LOGGER: RwLock<Option<Box<dyn LogSink>>> = RwLock::new(None);
 static START: OnceCell<time::Instant> = OnceCell::new();
 
-#[cfg_attr(test, mockall::automock)]
 pub trait LogSink: Send + Sync {
     fn send(&self, entry: LogEntry);
 }
