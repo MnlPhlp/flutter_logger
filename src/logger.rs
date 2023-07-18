@@ -66,7 +66,6 @@ static START: OnceCell<time::Instant> = OnceCell::new();
 pub trait LogSink: Send + Sync {
     fn send(&self, entry: LogEntry);
 }
-
 impl LogSink for StreamSink<LogEntry> {
     fn send(&self, entry: LogEntry) {
         self.add(entry);

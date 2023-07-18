@@ -1,4 +1,4 @@
-use flutter_logger::FlutterLogger;
+use flutter_logger;
 pub use flutter_logger::LogEntry;
 use flutter_rust_bridge::{frb, StreamSink};
 pub use log::Level;

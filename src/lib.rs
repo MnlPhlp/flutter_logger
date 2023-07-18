@@ -43,7 +43,7 @@ pub fn init(sink: impl LogSink + 'static, filter: LevelFilter) -> Result<(), Err
 pub struct FlutterLogger;
 impl log::Log for FlutterLogger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
-        metadata.level() < log::Level::Debug
+        metadata.level() <= log::max_level()
     }
 
     fn log(&self, record: &log::Record) {
