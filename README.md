@@ -14,12 +14,12 @@ This code is not complete. Look into the example folder for a full working examp
 
 ```rs
 pub fn test(i: i32) {
-		// using the 'log' crate macros
-		info!("test called with: {i}")
+    // using the 'log' crate macros
+    info!("test called with: {i}")
 }
 
 pub fn init(sink: StreamSink<LogEntry>) {
-		flutter_logger::init(sink).unwrap();
+    flutter_logger::init(sink).unwrap();
 }
 ```
 
@@ -28,15 +28,15 @@ pub fn init(sink: StreamSink<LogEntry>) {
 ```dart
 final rust_lib =
 void setupLogger(){
-		rustLib.init().listen((msg){
-			// This should use a logging framework in real applications
-			print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
-		});
+    rustLib.init().listen((msg){
+    // This should use a logging framework in real applications
+        print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
+    });
 }
 
 void main(){
-	setupLogger();
-	rustLib.test(i: 5);
+    setupLogger();
+    rustLib.test(i: 5);
 }
 
 ```
