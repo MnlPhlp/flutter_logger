@@ -1,6 +1,6 @@
 # flutter_logger
 
-logging library for using rust together with flutter/dart and [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) to get logs from rust into your app.
+implementation of the `log` crate for using rust together with flutter/dart and [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) to get logs from rust into your app.
 
 ## features
 
