@@ -10,6 +10,8 @@ pub use logger::LogEntry;
 #[cfg(test)]
 mod tests;
 
+pub use flutter_rust_bridge::StreamSink;
+
 /// create a logger label from a src file path
 /// ```
 /// let lbl = flutter_logger::get_lbl(file!());
@@ -33,7 +35,7 @@ static IS_INITIALIZED: AtomicBool = AtomicBool::new(false);
 /// initialize the Logger with a stream that sends LogEntries to dart/flutter
 pub fn init(sink: impl LogSink + 'static, filter: LevelFilter) -> Result<(), Error> {
     if !IS_INITIALIZED.swap(true, Ordering::Relaxed) {
-        log::set_logger(&LOGGER).map_err(|e| Error::SetLoggerError(e))?;
+        log::set_logger(&LOGGER).map_err(Error::SetLoggerError)?;
     }
     log::set_max_level(filter);
     logger::init(sink)?;
@@ -52,7 +54,7 @@ impl log::Log for FlutterLogger {
         }
         logger::log(
             record.level(),
-            record.file().map(|f| get_lbl(f)).unwrap_or("unknown"),
+            record.file().map(get_lbl).unwrap_or("unknown"),
             &std::fmt::format(record.args().to_owned()),
         )
     }
