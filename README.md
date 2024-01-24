@@ -4,22 +4,20 @@ implementation of the `log` crate for using rust together with flutter/dart and 
 
 ## features
 
-- `panic`: print rust panics to the log stream
+- `panic`: print rust panics to the log stream.
 
 ## usage
 
-This code is not complete. Look into the example folder for a full working example.
+The library contains a macro for all the code you have to include in your flutter_rust_bridge api definition.
 
 ### rust
 
 ```rs
+flutter_logger::flutter_logger_init!(LevelFilter::Info);
+
 pub fn test(i: i32) {
     // using the 'log' crate macros
     info!("test called with: {i}")
-}
-
-pub fn init(sink: StreamSink<LogEntry>) {
-    flutter_logger::init(sink).unwrap();
 }
 ```
 
@@ -28,15 +26,16 @@ pub fn init(sink: StreamSink<LogEntry>) {
 ```dart
 final rust_lib =
 void setupLogger(){
-    rustLib.init().listen((msg){
+    setupLogStream().listen((msg){
     // This should use a logging framework in real applications
         print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
     });
 }
 
 void main(){
-    setupLogger();
-    rustLib.test(i: 5);
+    await RustLib.init();
+    await setupLogger();
+    await test(i: 5);
 }
 
 ```
