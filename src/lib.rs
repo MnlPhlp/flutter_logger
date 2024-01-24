@@ -10,8 +10,6 @@ pub use logger::LogEntry;
 #[cfg(test)]
 mod tests;
 
-pub use flutter_rust_bridge::StreamSink;
-
 /// create a logger label from a src file path
 /// ```
 /// let lbl = flutter_logger::get_lbl(file!());
@@ -60,4 +58,44 @@ impl log::Log for FlutterLogger {
     }
 
     fn flush(&self) {}
+}
+
+#[macro_export]
+#[allow(clippy::crate_in_macro_def)]
+macro_rules! flutter_logger_init {
+    ($min_lvl: path) => {
+        use crate::frb_generated;
+        pub use flutter_logger::LogEntry;
+        use flutter_rust_bridge::frb;
+        pub use log::Level;
+
+        #[flutter_rust_bridge::frb(sync)]
+        pub fn setup_log_stream(sink: frb_generated::StreamSink<flutter_logger::LogEntry>) {
+            flutter_logger::init(sink, $min_lvl).unwrap();
+        }
+
+        impl flutter_logger::logger::LogSink
+            for frb_generated::StreamSink<flutter_logger::LogEntry>
+        {
+            fn send(&self, entry: flutter_logger::LogEntry) {
+                self.add(entry).unwrap();
+            }
+        }
+
+        #[frb(mirror(LogEntry))]
+        struct _LogEntry {
+            pub time_millis: i64,
+            pub msg: String,
+            pub log_level: log::Level,
+            pub lbl: String,
+        }
+        #[frb(mirror(Level))]
+        enum _LogLevel {
+            Error,
+            Warn,
+            Info,
+            Debug,
+            Trace,
+        }
+    };
 }

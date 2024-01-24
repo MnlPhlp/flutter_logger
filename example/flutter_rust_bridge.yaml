@@ -1,0 +1,3 @@
+
+rust_input: rust_lib/src/api.rs
+dart_output: bin

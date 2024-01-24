@@ -1,6 +1,4 @@
 use std::{
-    cell::RefCell,
-    panic::catch_unwind,
     process::Command,
     sync::{Arc, Mutex},
 };

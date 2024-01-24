@@ -1,23 +1,22 @@
 import 'dart:io';
 
-import 'generated.dart' as gen;
+import 'api.dart';
+import 'frb_generated.dart';
 import 'dart:ffi' as ffi;
 
-final rustLib = gen.RustLibImpl(
-    ffi.DynamicLibrary.open("rust_lib/target/release/librust_lib.so"));
-
 Future<void> setupLogger() async {
-  rustLib.init().listen((msg) {
+  setupLogStream().listen((msg) {
     // This should use a logging framework in real applications
     print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
   });
 }
 
 void main(List<String> arguments) async {
+  await RustLib.init();
   await setupLogger();
-  await rustLib.test(i: 12);
+  await test(i: 12);
   try {
-    await rustLib.panic();
+    await panic();
   } catch (e) {}
   exit(0);
 }
