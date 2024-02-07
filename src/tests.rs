@@ -38,5 +38,11 @@ fn test_example() {
     let output = Command::new("./run.sh").current_dir("./example").output();
     println!("{output:?}");
     assert!(output.is_ok());
-    assert!(output.unwrap().status.success());
+    let output = output.unwrap();
+    assert!(output.status.success());
+    let text = String::from_utf8(output.stdout);
+    assert!(text.is_ok());
+    let text = text.unwrap();
+    assert!(text.contains("test called Log info!() with: 12"));
+    assert!(text.contains("this should be passed to dart"))
 }

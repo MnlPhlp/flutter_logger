@@ -5,7 +5,7 @@ import 'frb_generated.dart';
 import 'dart:ffi' as ffi;
 
 Future<void> setupLogger() async {
-  setupLogStream().listen((msg) {
+  infoLogger().listen((msg) {
     // This should use a logging framework in real applications
     print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
   });

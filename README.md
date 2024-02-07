@@ -9,18 +9,24 @@ implementation of the `log` crate for using rust together with flutter/dart and 
 ## usage
 
 The library contains a macro for all the code you have to include in your flutter_rust_bridge api definition.
+Calling the macro without args creates the init function "setup_log_stream" with LeveFilter::Debug.
+You can also specify function name and LevelFilter (or only one).
+The macro can only be called once because of conflicting implementations
 
 ### rust
-
 ```rs
-flutter_logger::flutter_logger_init!(LevelFilter::Info);
+
+// only one of these calls can be active
+flutter_logger::flutter_logger_init!(); // default
+// flutter_logger::flutter_logger_init!(LeveFilter::Trace); // sepcify level
+// flutter_logger::flutter_logger_init!(logger_init); // sepcify name
+// flutter_logger::flutter_logger_init!(info_logger, LevelFilter::Info); // sepcify both
 
 pub fn test(i: i32) {
     // using the 'log' crate macros
     info!("test called with: {i}")
 }
 ```
-
 ### dart/flutter
 
 ```dart

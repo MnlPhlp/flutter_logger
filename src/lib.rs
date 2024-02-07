@@ -60,17 +60,27 @@ impl log::Log for FlutterLogger {
     fn flush(&self) {}
 }
 
+/// calling the macro without args creates init function "setup_log_stream" with LeveFilter::Debug.
+/// You can also specify function name and LevelFilter (or only one).
+/// The macro can only be called once because of conflicting implementations
+///
+/// ```rs
+/// flutter_logger::flutter_logger_init!(); // default
+/// flutter_logger::flutter_logger_init!(LeveFilter::Trace); // sepcify level
+/// flutter_logger::flutter_logger_init!(logger_init); // sepcify name
+/// flutter_logger::flutter_logger_init!(info_logger, LevelFilter::Info); // sepcify both
+/// ```
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]
 macro_rules! flutter_logger_init {
-    ($min_lvl: path) => {
+    ($func_name: ident,$min_lvl: path) => {
         use crate::frb_generated;
         pub use flutter_logger::LogEntry;
         use flutter_rust_bridge::frb;
         pub use log::Level;
 
         #[flutter_rust_bridge::frb(sync)]
-        pub fn setup_log_stream(sink: frb_generated::StreamSink<flutter_logger::LogEntry>) {
+        pub fn $func_name(sink: frb_generated::StreamSink<flutter_logger::LogEntry>) {
             flutter_logger::init(sink, $min_lvl).unwrap();
         }
 
@@ -97,5 +107,14 @@ macro_rules! flutter_logger_init {
             Debug,
             Trace,
         }
+    };
+    ($func_name: ident) => {
+        $crate::flutter_logger_init!($func_name, log::LevelFilter::Debug);
+    };
+    ($min_lvl: path) => {
+        $crate::flutter_logger_init!(setup_log_stream, $min_lvl);
+    };
+    () => {
+        $crate::flutter_logger_init!(setup_log_stream, log::LevelFilter::Debug);
     };
 }
