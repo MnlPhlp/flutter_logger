@@ -30,7 +30,6 @@ pub fn test(i: i32) {
 ### dart/flutter
 
 ```dart
-final rust_lib =
 void setupLogger(){
     setupLogStream().listen((msg){
     // This should use a logging framework in real applications
