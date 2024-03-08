@@ -93,10 +93,10 @@ packages:
     dependency: transitive
     description:
       name: dart_internal
-      sha256: "689dccc3d5f62affd339534cca548dce12b3a6b32f0f10861569d3025efc0567"
+      sha256: "04145b91ccec450325fee75692b1ab62eb615e8892c334f0f4d31c696a857873"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.9"
+    version: "0.2.10"
   ffi:
     dependency: "direct main"
     description:
@@ -125,10 +125,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_rust_bridge
-      sha256: d0d366db59eead201fac6fd7e9ce1f6a291edb04dd3c2d8dd07e140b8e1a39b2
+      sha256: "72ed9e781fb2a34ae209d18dcee38712269027f8292c8db93883d7d8f7ebff20"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-dev.23"
+    version: "2.0.0-dev.27"
   frontend_server_client:
     dependency: transitive
     description:
@@ -434,4 +434,4 @@ packages:
     source: hosted
     version: "2.1.1"
 sdks:
-  dart: ">=3.0.5 <3.3.0"
+  dart: ">=3.0.5 <3.4.0"
