@@ -79,7 +79,6 @@ macro_rules! flutter_logger_init {
         use flutter_rust_bridge::frb;
         pub use log::Level;
 
-        #[flutter_rust_bridge::frb(sync)]
         pub fn $func_name(sink: frb_generated::StreamSink<flutter_logger::LogEntry>) {
             flutter_logger::init(sink, $min_lvl).unwrap();
         }

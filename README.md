@@ -30,7 +30,7 @@ pub fn test(i: i32) {
 ### dart/flutter
 
 ```dart
-void setupLogger(){
+Future setupLogger() async {
     setupLogStream().listen((msg){
     // This should use a logging framework in real applications
         print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");

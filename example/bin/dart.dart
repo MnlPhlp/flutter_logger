@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'api.dart';
 import 'frb_generated.dart';
-import 'dart:ffi' as ffi;
 
-Future<void> setupLogger() async {
+Future setupLogger() async {
   infoLogger().listen((msg) {
     // This should use a logging framework in real applications
     print("${msg.logLevel} ${msg.lbl.padRight(8)}: ${msg.msg}");
