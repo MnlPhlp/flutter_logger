@@ -16,7 +16,7 @@ struct TestLogSink {
 impl LogSink for TestLogSink {
     fn send(&self, entry: LogEntry) {
         *self.last_arg.lock().unwrap() = Some(entry);
-        *self.calls.lock().unwrap() += 1
+        *self.calls.lock().unwrap() += 1;
     }
 }
 
@@ -44,5 +44,5 @@ fn test_example() {
     assert!(text.is_ok());
     let text = text.unwrap();
     assert!(text.contains("test called Log info!() with: 12"));
-    assert!(text.contains("this should be passed to dart"))
+    assert!(text.contains("this should be passed to dart"));
 }

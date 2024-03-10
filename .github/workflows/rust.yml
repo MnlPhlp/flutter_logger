@@ -24,3 +24,5 @@ jobs:
       run: cargo build --verbose --features panic
     - name: Run tests
       run: cargo test --verbose
+    - name: Run Clippy
+      run: cargo clippy -- -Wclippy::pedantic -Dwarnings

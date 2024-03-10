@@ -1,8 +1,6 @@
 use once_cell::sync::OnceCell;
 use std::{sync::RwLock, time};
 
-use crate::Error;
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct LogEntry {
     pub time_millis: i64,
@@ -11,6 +9,9 @@ pub struct LogEntry {
     pub lbl: String,
 }
 
+/// Sends a log to the registered `LogSink`
+/// # Panics
+/// panics if logger is not setup
 pub fn log(level: log::Level, label: &str, msg: &str) {
     let logger = match LOGGER.read() {
         Ok(val) => val,
@@ -19,6 +20,7 @@ pub fn log(level: log::Level, label: &str, msg: &str) {
     if let Some(logger) = logger.as_ref() {
         let start = START.get().unwrap();
         logger.send(LogEntry {
+            #[allow(clippy::cast_possible_truncation)]
             time_millis: start.elapsed().as_millis() as i64,
             msg: String::from(msg),
             log_level: level,
@@ -35,7 +37,7 @@ pub trait LogSink: Send + Sync {
 }
 
 /// initialize a stream to pass log events to dart/flutter
-pub fn init(s: impl LogSink + 'static) -> Result<(), Error> {
+pub fn init(s: impl LogSink + 'static) {
     let _ = START.set(time::Instant::now());
     let mut logger = match LOGGER.write() {
         Ok(val) => val,
@@ -44,5 +46,4 @@ pub fn init(s: impl LogSink + 'static) -> Result<(), Error> {
     *logger = Some(Box::new(s));
     #[cfg(feature = "panic")]
     std::panic::set_hook(Box::new(|p| log::error!("panic occured: {p:?}")));
-    Ok(())
 }

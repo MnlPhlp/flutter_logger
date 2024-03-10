@@ -1,10 +1,9 @@
-use log::LevelFilter;
+use log::{LevelFilter, SetLoggerError};
 use logger::LogSink;
 use std::{
     path::Path,
     sync::atomic::{AtomicBool, Ordering},
 };
-use thiserror::Error;
 pub mod logger;
 pub use logger::LogEntry;
 #[cfg(test)]
@@ -14,29 +13,26 @@ mod tests;
 /// ```
 /// let lbl = flutter_logger::get_lbl(file!());
 /// ```
+/// # Panics
+/// panics if an invalid path is given
+#[must_use]
 pub fn get_lbl(path: &str) -> &str {
     let filename = Path::new(path).file_name().unwrap().to_str().unwrap();
     &filename[..filename.len() - 3]
 }
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("logger was already initialized")]
-    AlreadyInitialized,
-
-    #[error("error setting logger {0}")]
-    SetLoggerError(log::SetLoggerError),
-}
-
 static LOGGER: FlutterLogger = FlutterLogger;
 static IS_INITIALIZED: AtomicBool = AtomicBool::new(false);
-/// initialize the Logger with a stream that sends LogEntries to dart/flutter
-pub fn init(sink: impl LogSink + 'static, filter: LevelFilter) -> Result<(), Error> {
+
+/// initialize the Logger with a stream that sends `LogEntries` to dart/flutter
+/// # Errors
+/// return an error if a logger was already set
+pub fn init(sink: impl LogSink + 'static, filter: LevelFilter) -> Result<(), SetLoggerError> {
     if !IS_INITIALIZED.swap(true, Ordering::Relaxed) {
-        log::set_logger(&LOGGER).map_err(Error::SetLoggerError)?;
+        log::set_logger(&LOGGER)?;
     }
     log::set_max_level(filter);
-    logger::init(sink)?;
+    logger::init(sink);
     Ok(())
 }
 
@@ -52,16 +48,16 @@ impl log::Log for FlutterLogger {
         }
         logger::log(
             record.level(),
-            record.file().map(get_lbl).unwrap_or("unknown"),
+            record.file().map_or("unknown", get_lbl),
             &std::fmt::format(record.args().to_owned()),
-        )
+        );
     }
 
     fn flush(&self) {}
 }
 
-/// calling the macro without args creates init function "setup_log_stream" with LeveFilter::Debug.
-/// You can also specify function name and LevelFilter (or only one).
+/// calling the macro without args creates init function `setup_log_stream` with `LeveFilter::Debug`.
+/// You can also specify function name and `LevelFilter` (or only one).
 /// The macro can only be called once because of conflicting implementations
 ///
 /// ```rs
