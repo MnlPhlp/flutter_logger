@@ -8,5 +8,5 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_logger = { path = "../../", features=["panic"]}
-flutter_rust_bridge = "=2.0.0-dev.27"
+flutter_rust_bridge = "=2.1.0"
 log = "0.4.19"

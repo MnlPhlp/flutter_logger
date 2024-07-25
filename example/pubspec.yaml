@@ -4,12 +4,12 @@ version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 
 environment:
-  sdk: ^3.0.5
+  sdk: ^3.4.0
 
 # Add regular dependencies here.
 dependencies:
   ffi: ^2.0.2
-  flutter_rust_bridge: 2.0.0-dev.27
+  flutter_rust_bridge: 2.1.0
 
 dev_dependencies:
   lints: ^2.0.0
